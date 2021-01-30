@@ -1,21 +1,20 @@
 <p align="center">
 <img src="https://marioiliev.com/images/store-me-logo.png" alt="React Store Me" height="123" />
 </p>
-<h3 align="center">Fast, flexible and lightweight global state manager for React. </h3>
-Provides two APIs for both basic and
-more complex cases allowing you to control component updates.
+<h3 align="center">Fast, flexible and lightweight global state manager for React.</h3>
+<p align="center">Provides two APIs for both basic and more complex cases allowing you to control component updates.</p>
 
 # Why "Store me"
 
 **"Store me"** was created to provide easy way of using a global state in **React** but also giving the option to fine tune if you need to heavily optimize your React app performance. **"Store me"** is using React Context and React Hooks to provide methods and to rerender components. This package is not working with class based React components.
 
-[API](/#api)
-[useStoreMe](/#usestoreme)
-[setStoreMe](/#setstoreme)
-[getStoreMe](/#getstoreme)
-[resetStoreMe](/#resetstoreme)
-[deleteStoreMe](/#deletestoreme)
-[storeMeSubscriber](/#storemesubscriber)
+[API](#api)\
+[useStoreMe](#usestoreme)\
+[setStoreMe](#setstoreme)\
+[getStoreMe](#getstoreme)\
+[resetStoreMe](#resetstoreme)\
+[deleteStoreMe](#deletestoreme)\
+[storeMeSubscriber](#storemesubscriber)
 
 ## Installation
 
@@ -37,9 +36,9 @@ const initialState = {
     name: "John Doe",
     age: 21,
     is_premium: true,
-    balance: "$1050",
+    profit: "$1050",
     settings: {
-      notification_allowed: 1,
+      notifications_allowed: 1,
     },
   },
 };
@@ -82,16 +81,18 @@ const App = () => {
 
 In everyday React we import the **entire "user" object** in our component even if it needs only one or a few properties from it. This way we expose our components to many unwanted re-renders and depending on your application it could drastically affect performance.
 
-"Store me" provides a "sub accessor" option. The component will never re-render unless the user name changes.
+**"Store me"** provides a "sub accessor" option. In this case the component will never re-render unless the user name changes.
 
 ```js
 const App = () => {
   const { user } = useStoreMe("user.name");
 
   console.log(user);
-  // 	user: {
-  //		name: "John Doe"
-  //	}
+  /*
+  user: {
+    name: "John Doe"
+  }
+  */
 
   return user.name;
 };
@@ -107,11 +108,13 @@ const App = () => {
   const { name, age, is_premium } = user;
 
   console.log(user);
-  //	user: {
-  //		name: "John Doe",
-  //		age: 21,
-  //		is_premium: true,
-  //	}
+  /*
+  user: {
+    name: "John Doe",
+    age: 21,
+    is_premium: true,
+  }
+  */
 
   return (
     <div className={is_premium ? "gold-color" : "silver-color"}>
@@ -132,14 +135,18 @@ const globalState = {
 };
 
 const App = () => {
-  const { user } = useStoreMe("user.settings.notification_allowed");
+  const { user } = useStoreMe("user.settings.notifications_allowed");
 
   console.log(user);
-  //	user: {
-  //		settings: {
-  //			notification_allowed: undefined
-  //		}
-  //	}
+  /*
+  user: {
+    settings: {
+      notifications_allowed: undefined
+    }
+  }
+  */
+
+  return <div>Click here to log in</div>;
 };
 ```
 
@@ -190,7 +197,7 @@ const App = () => {
 
 #### Retrieve state on demand
 
-It's not required to be subscribed to a specific state value in order to access it. **getStoreMe** can be used in various scenarios as you will see in many examples listed here.
+It's not required to be subscribed to a specific state value in order to access it. **getStoreMe** can be used in various scenarios as you will see in the examples listed here.
 
 In this situation, we want to send some data to the backend on click event. Untill the user initiate that click there is no point of having re-renders when the user object or the language changes. We can consume the state just when we want it.
 
@@ -235,8 +242,7 @@ const App = () => {
       /* Option 2. Reset all values to their initial state when they were created  */
       resetStoreMe();
 
-      /* Option 3. Reset the entire state with the initial one received when 
-			initializing StoreMe component */
+      /* Option 3. Reset the entire state with the initial one received when initializing StoreMe component */
       resetStoreMe("initial-store-me");
     }
   }, [user]);
@@ -289,7 +295,7 @@ const App = () => {
 Depending on the type of your applications you may need a way to fully control component updates. This is where the **"storeMeSubscriber"** comes into play. Let's see some possible usages and cases.
 
 **Example 1.**
-The goal is to update the component only when it's visible on the screen. This is useful for cases when frequently updated components are not always visible because of a scroll. Imagine 200 hundred components in a scrollable list, showing the user balance changing 10 times per second.
+The goal is to update the component only when it's visible on the screen. This is useful for cases when frequently updated components are not always visible because of a scroll.\ Imagine 200 hundred components in a scrollable list, showing the user profit changing 10 times per second.
 
 ```js
 import { useStoreMeActions } from "store-me";
@@ -306,14 +312,15 @@ const App = () => {
   const { user, language } = state;
 
   /*
-	Every time "isVisible" becomes true, 
-	the component will subscribe to any updates on the user and language values.
-	If "isVisible" becomes false, the return function will unsubscribe.
-	The reason for calling the "setState" when "isVisible" becomes true is to set 
-	the latest values from the global state to our local component state.
-	Keep in mind that "storeMeSubscriber" does not retrieve the state upon initialization,
-	only when an actual update occurs.
-	*/
+  Every time "isVisible" becomes true, 
+  the component will subscribe to any updates on the user and language values.
+  If "isVisible" becomes false, the return function will unsubscribe.
+  The reason for calling the "setState" when "isVisible" becomes true is to set 
+  the latest values from the global state to our local component state.
+  Keep in mind that "storeMeSubscriber" does not retrieve the state upon initialization,
+  only when an actual update occurs.
+  */
+
   useEffect(() => {
     if (isVisible) {
       const subscription = storeMeSubscriber(subscriptionKeys, setState);
@@ -327,7 +334,7 @@ const App = () => {
   return (
     <VisibilitySensor onChange={setIsVisible}>
       <div>
-        Hello {user.name}. Your balance is ${user.balance}
+        Hello {user.name}. Your profit is ${user.profit}
       </div>
     </VisibilitySensor>
   );
@@ -335,50 +342,54 @@ const App = () => {
 ```
 
 **Example 2.**
-We are going to do the same thing with a different approach, just to show how muuch control you can have.
+We are going to do the same thing with a different approach, just to show how much control you can have.
 
 ```js
 import { useStoreMeActions } from "store-me";
 import { useState, useEffect, useRef } from "react";
-import  VisibilitySensor  from  "react-visibility-sensor";
+import VisibilitySensor from "react-visibility-sensor";
 
 const subscriptionKeys = ["user", "language"];
 
 const App = () => {
-	const { storeMeSubscriber, getStoreMe } = useStoreMeActions();
-	const [state, setState] = useState(getStoreMe(subscriptionKeys));
-	const isVisibleRef = useRef(true);
+  const { storeMeSubscriber, getStoreMe } = useStoreMeActions();
+  const [state, setState] = useState(getStoreMe(subscriptionKeys));
+  const isVisibleRef = useRef(true);
 
-	const { user, language } = state;
+  const { user, language } = state;
 
-	/*
-	Instead of using "isVisible" state and subscribe/unsubscribe depending on it's value,
-	we could be always subscribed but update our component state only when we want, using
-	the React useRef to determine if we want or not.
-	This is usefull if you have multiple conditions
-	upon which you decide if you want to update or not.
-	*/
-	useEffect(() => {
-		const subscription = storeMeSubscriber(subscriptionKeys, data ⇒ {
-			isVisible.current && setState(data);
-		});
+  /*
+  Instead of using "isVisible" state and subscribe/unsubscribe depending on it's value,
+  we could be always subscribed but update our component state only when we want, using
+  the React useRef to determine if we want or not.
+  This is usefull if you have multiple conditions
+  upon which you decide if you want to update or not.
+  */
+  useEffect(() => {
+    const subscription = storeMeSubscriber(subscriptionKeys, data => {
+      isVisible.current && setState(data);
+    });
 
-		return () => subscription();
-	}, [storeMeSubscriber]);
+    return () => subscription();
+  }, [storeMeSubscriber]);
 
-	return (
-		<VisibilitySensor onChange={isVisible => {
-			isVisibleRef.current = isVisible;
-		}}>
-			<div>Hello {user.name}. Your balance is ${user.balance}</div>
-		</VisibilitySensor>
-	);
+  return (
+    <VisibilitySensor
+      onChange={isVisible => {
+        isVisibleRef.current = isVisible;
+      }}
+    >
+      <div>
+        Hello {user.name}. Your profit is ${user.profit}
+      </div>
+    </VisibilitySensor>
+  );
 };
 ```
 
 **Example 3.**
 Controlling update frequency.
-Let's say the user balance is updated from the backend **10 times per second**. This data is going into your global state but because of reasons, you want to display the changes every **5 seconds**.
+Let's say the user profit is updated from the backend **10 times per second**. This data is going into your global state but because of reasons, you want to display the changes every **5 seconds**.
 
 ```js
 import { useStoreMeActions } from "store-me";
@@ -387,33 +398,37 @@ import { useState, useEffect, useRef } from "react";
 const subscriptionKeys = ["user", "language"];
 
 const App = () => {
-	const { storeMeSubscriber, getStoreMe } = useStoreMeActions();
-	const [state, setState] = useState(getStoreMe(subscriptionKeys));
+  const { storeMeSubscriber, getStoreMe } = useStoreMeActions();
+  const [state, setState] = useState(getStoreMe(subscriptionKeys));
 
-	const { user, language } = state;
+  const { user, language } = state;
 
-	useEffect(() => {
-		let lastUpdateTime  =  0;
-		let latestState = "no_updates_yet";
-		const subscription = storeMeSubscriber(subscriptionKeys, data ⇒ {
-			latestState = data;
-		});
+  useEffect(() => {
+    let lastUpdateTime = 0;
+    let latestState = "no_updates_yet";
+    const subscription = storeMeSubscriber(subscriptionKeys, data => {
+      latestState = data;
+    });
 
-		const initAnimationFrame  = (time  =  0) => {
-			requestAnimationFrame(initAnimationFrame);
+    const initAnimationFrame = (time = 0) => {
+      requestAnimationFrame(initAnimationFrame);
 
-			if (time - lastUpdateTime >= 5000) {
-				lastUpdateTime = time;
-				latestState !== "no_updates_yet" && setState(latestState);
-			}
-		};
+      if (time - lastUpdateTime >= 5000) {
+        lastUpdateTime = time;
+        latestState !== "no_updates_yet" && setState(latestState);
+      }
+    };
 
-		initAnimationFrame();
+    initAnimationFrame();
 
-		return () => subscription();
-	}, [storeMeSubscriber]);
+    return () => subscription();
+  }, [storeMeSubscriber]);
 
-	return <div>Hello {user.name}. Your balance is ${user.balance}</div>;
+  return (
+    <div>
+      Hello {user.name}. Your profit is ${user.profit}
+    </div>
+  );
 };
 ```
 
@@ -459,17 +474,17 @@ const Movie = movie_id => {
 
 # API
 
-**StoreMe**
-[Example](#wrap-your-application-and-provide-the-initial-state)
-_Type:_ `Component`
-_Arguments:_ `initialState` of type object `{}`
+**StoreMe**\
+[Example](#wrap-your-application-and-provide-the-initial-state)\
+_Type:_ `Component`\
+_Arguments:_ `initialState` of type object `{}`\
 _Returns:_ `children` prop
 
 ---
 
-**useStoreMe**
-[Example](#usestoreme)
-_Type:_ `Hook/Function`
+**useStoreMe**\
+[Example](#usestoreme)\
+_Type:_ `Hook/Function`\
 _Arguments:_ `string` or `number`. Single or multiple separated by comma. The are three types of accessors.
 
 - **Single**, for example `user`. Accessing any type of value.
@@ -480,9 +495,9 @@ _Arguments:_ `string` or `number`. Single or multiple separated by comma. The ar
 
 ---
 
-**setStoreMe**
-[Example](#setstoreme)
-_Type:_ `Function`
+**setStoreMe**\
+[Example](#setstoreme)\
+_Type:_ `Function`\
 _Arguments:_
 
 - `object` with single or multiple values.
@@ -490,9 +505,9 @@ _Arguments:_
 
 ---
 
-**getStoreMe**
-[Example](#getstoreme)
-_Type:_ `Function`
+**getStoreMe**\
+[Example](#getstoreme)\
+_Type:_ `Function`\
 _Arguments:_ The same as **useStoreMe**. The are two differences with the **useStoreMe** method.
 
 - It is not automatic subscription to the global state. It's rather an on demand data fetcher from the state.
@@ -500,9 +515,9 @@ _Arguments:_ The same as **useStoreMe**. The are two differences with the **useS
 
 ---
 
-**resetStoreMe**
-[Example](#resetstoreme)
-_Type:_ `Function`
+**resetStoreMe**\
+[Example](#resetstoreme)\
+_Type:_ `Function`\
 _Arguments:_
 
 - `string/s` or `number/s` representing a **key/s** in the global state. _StoreMe_ will reset the state of the specified keys to their initial value.
@@ -511,21 +526,22 @@ _Arguments:_
 
 ---
 
-**deleteStoreMe**
-[Example](#deletestoreme)
-_Type:_ `Function`
+**deleteStoreMe**\
+[Example](#deletestoreme)\
+_Type:_ `Function`\
 _Arguments:_
 
 - `string/s` or `number/s` representing a **key/s** in the global state. _StoreMe_ will delete these values from the state as they never were.
 
 ---
 
-**storeMeSubscriber**
-[Example](#storemesubscriber)
-_Type:_ `Function`
+**storeMeSubscriber**\
+[Example](#storemesubscriber)\
+_Type:_ `Function`\
 _Arguments:_
 
 - `array` with the same type of accessors as described in **useStoreMe**
 - `function` which will be executed every time there is an update to the values you are subscribed for.
 
-_Returns:_ `function` which will **unsubscribe** from StoreMe updates when the component is destroyed (unmount). You if you don't clean up your subscription you will cause yourself a memory leak.
+_Returns:_ `function` which will **unsubscribe** from "StoreMe" updates when the component is destroyed (unmounted).\
+**You if you don't clean up your subscription you will cause yourself a memory leak.**

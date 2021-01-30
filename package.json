@@ -1,0 +1,110 @@
+{
+  "name": "store-me",
+  "version": "1.0.0",
+  "description": "Fast, flexible and lightweight global state manager for React. Provides two APIs for both basic and more complex cases allowing you to control component updates.",
+  "main": "./build/index.js",
+  "scripts": {
+    "build": "webpack"
+  },
+  "keywords": [
+    "store-me",
+    "storeme",
+    "storme",
+    "stormy",
+    "state",
+    "redux",
+    "flux",
+    "reselect",
+    "react",
+    "context",
+    "reducer",
+    "global",
+    "global state",
+    "redux selector",
+    "state management",
+    "state-machine",
+    "usestate",
+    "immutable",
+    "hooks",
+    "hook state",
+    "react context",
+    "react state management"
+  ],
+  "author": "Mario Iliev",
+  "license": "MIT",
+  "babel": {
+    "presets": [
+      "@babel/preset-react",
+      "@babel/preset-env"
+    ]
+  },
+  "peerDependencies": {
+    "react": "^16.8.0",
+    "react-dom": "^16.8.0"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.7.5",
+    "@babel/preset-env": "^7.7.6",
+    "@babel/preset-react": "^7.7.4",
+    "@typescript-eslint/eslint-plugin": "^4.14.1",
+    "@typescript-eslint/parser": "^4.14.1",
+    "babel-eslint": "^10.1.0",
+    "babel-loader": "^8.0.6",
+    "eslint": "^7.18.0",
+    "eslint-config-react-app": "^6.0.0",
+    "eslint-plugin-flowtype": "^5.2.0",
+    "eslint-plugin-import": "^2.22.1",
+    "eslint-plugin-jsx-a11y": "^6.4.1",
+    "eslint-plugin-react": "^7.22.0",
+    "eslint-plugin-react-hooks": "^4.2.0",
+    "husky": "^4.3.8",
+    "lint-staged": "^10.5.3",
+    "prettier": "2.0.5",
+    "webpack": "^4.41.2",
+    "webpack-cli": "^3.3.10"
+  },
+  "eslintConfig": {
+    "extends": "react-app",
+    "env": {
+      "browser": true
+    },
+    "globals": {
+      "__webpack_public_path__": true,
+      "window": true
+    },
+    "rules": {
+      "no-eval": 0,
+      "no-var": "error",
+      "curly": "error",
+      "indent": [
+        1,
+        2,
+        {
+          "SwitchCase": 1
+        }
+      ],
+      "brace-style": [
+        "error",
+        "1tbs",
+        {
+          "allowSingleLine": false
+        }
+      ],
+      "space-before-blocks": "error",
+      "react-hooks/rules-of-hooks": "error",
+      "react-hooks/exhaustive-deps": 1
+    }
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "lint-staged"
+    }
+  },
+  "lint-staged": {
+    "*.js": [
+      "eslint --rule 'no-console: [error, { allow: [warn, error, table] }]'",
+      "eslint --fix",
+      "prettier --write"
+    ]
+  }
+}

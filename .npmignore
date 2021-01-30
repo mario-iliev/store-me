@@ -1,0 +1,6 @@
+src/
+utils/
+.vscode/
+
+.prettierrc
+webpack.config.js

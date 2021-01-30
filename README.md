@@ -520,9 +520,9 @@ _Arguments:_ The same as **useStoreMe**. The are two differences with the **useS
 _Type:_ `Function`\
 _Arguments:_
 
-- `string/s` or `number/s` representing a **key/s** in the global state. _StoreMe_ will reset the state of the specified keys to their initial value.
-- If no argument is passed, _StoreMe_ **will reset all state values** to their initial state when they were created.
-- If you pass "initial-store-me" _StoreMe_ **will reset the entire state** to the initial one received when initializing StoreMe component
+- `string/s` or `number/s` representing a **key/s** in the global state. **"Store me"** will reset the state of the specified keys to their initial value.
+- If no argument is passed, **"Store me"** **will reset all state values** to their initial state when they were created.
+- If you pass "initial-store-me" **"Store me"** **will reset the entire state** to the initial one received when initializing StoreMe component
 
 ---
 
@@ -531,7 +531,7 @@ _Arguments:_
 _Type:_ `Function`\
 _Arguments:_
 
-- `string/s` or `number/s` representing a **key/s** in the global state. _StoreMe_ will delete these values from the state as they never were.
+- `string/s` or `number/s` representing a **key/s** in the global state. **"Store me"** will delete these values from the state as they never were.
 
 ---
 

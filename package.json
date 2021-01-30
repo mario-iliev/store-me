@@ -2,12 +2,15 @@
   "name": "store-me",
   "version": "1.0.0",
   "description": "Fast, flexible and lightweight global state manager for React. Provides two APIs for both basic and more complex cases allowing you to control component updates.",
+  "author": "Mario Iliev",
+  "license": "MIT",
   "main": "./build/index.js",
   "scripts": {
     "build": "webpack"
   },
   "keywords": [
     "store-me",
+    "store me",
     "storeme",
     "storme",
     "stormy",
@@ -30,8 +33,11 @@
     "react context",
     "react state management"
   ],
-  "author": "Mario Iliev",
-  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/mario-iliev/store-me.git"
+  },
+  "homepage": "https://github.com/mario-iliev/store-me#readme",
   "babel": {
     "presets": [
       "@babel/preset-react",

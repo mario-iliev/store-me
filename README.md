@@ -543,5 +543,5 @@ _Arguments:_
 - `array` with the same type of accessors as described in **useStoreMe**
 - `function` which will be executed every time there is an update to the values you are subscribed for.
 
-_Returns:_ `function` which will **unsubscribe** from "StoreMe" updates when the component is destroyed (unmounted).\
+_Returns:_ `function` which will **unsubscribe** from **"Store me"** updates when the component is destroyed (unmounted).\
 **You if you don't clean up your subscription you will cause yourself a memory leak.**

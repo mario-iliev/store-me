@@ -31,7 +31,7 @@ import App from "./App";
 
 const initialState = {
   isMenuExpanded: false,
-  lannguage: "en_US",
+  language: "en_US",
   user: {
     name: "John Doe",
     age: 21,
@@ -129,7 +129,7 @@ What if the user is not yet logged in? **"Store me"** will always provide the ex
 // Current global state:
 const globalState = {
   isMenuExpanded: false,
-  lannguage: "en_US",
+  language: "en_US",
   user: false,
 };
 
@@ -153,7 +153,7 @@ const App = () => {
 
 #### Updating the global state
 
-In the following examples we didn't consume the **"isMenuExpanded"** value with **useStore** because it's not required for the component to have the state if we just need to update it.
+In the following examples we didn't consume the **"isMenuExpanded"** value with **useStoreMe** because it's not required for the component to have the state if we just need to update it.
 
 ```js
 import { setStoreMe } from "store-me";
@@ -162,13 +162,19 @@ const App = () => {
   return (
     <>
       // Static value update
-      <div onClick={() => setStoreMe({ isMenuExpanded: true })}>Expand Menu</div>
+      <div onClick={() => setStoreMe({ isMenuExpanded: true })}>
+        Expand Menu
+      </div>
       // Static value update
-      <div onClick={() => setStoreMe({ isMenuExpanded: false })}>Collapse Menu</div>
+      <div onClick={() => setStoreMe({ isMenuExpanded: false })}>
+        Collapse Menu
+      </div>
       // Dynamic value update
       <div
         onClick={() => {
-          setStoreMe(({ isMenuExpanded }) => ({ isMenuExpanded: !isMenuExpanded }));
+          setStoreMe(({ isMenuExpanded }) => ({
+            isMenuExpanded: !isMenuExpanded,
+          }));
         }}
       >
         Toggle Menu

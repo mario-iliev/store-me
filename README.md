@@ -6,7 +6,7 @@
 
 # Why "Store me"
 
-**"Store me"** was created to provide easy way of using a global state in **React** but also giving the option to fine tune if you need to heavily optimize your React app performance. **"Store me"** is using React Context and React Hooks to provide methods and to rerender components. This package is not working with class based React components.
+**"Store me"** was created to provide easy way of using a global state in **React** but also giving the option to fine tune if you need to heavily optimize your React app performance. **"Store me"** is using React Hooks to rerender components with latest state. This package is not working with class based React components.
 
 [API](#api)\
 [useStoreMe](#usestoreme)\
@@ -63,11 +63,10 @@ import App from "./App";
 ## useStoreMe
 
 ```js
-import { useStoreMe, useStoreMeActions } from "store-me";
+import { useStoreMe, setStoreMe } from "store-me";
 
 const App = () => {
   const { user, isMenuExpanded } = useStoreMe("user", "isMenuExpanded");
-  const { setStoreMe } = useStoreMeActions();
 
   return (
     <div onClick={() => setStoreMe({ isMenuExpanded: !isMenuExpanded })}>
@@ -157,11 +156,9 @@ const App = () => {
 In the following examples we didn't consume the **"isMenuExpanded"** value with **useStore** because it's not required for the component to have the state if we just need to update it.
 
 ```js
-import { useStoreMeActions } from "store-me";
+import { setStoreMe } from "store-me";
 
 const App = () => {
-  const { setStoreMe } = useStoreMeActions();
-
   return (
     <>
       // Static value update
@@ -202,11 +199,9 @@ It's not required to be subscribed to a specific state value in order to access 
 In this situation, we want to send some data to the backend on click event. Untill the user initiate that click there is no point of having re-renders when the user object or the language changes. We can consume the state just when we want it.
 
 ```js
-import { useStoreMeActions } from "store-me";
+import { getStoreMe } from "store-me";
 
 const App = () => {
-  const { getStoreMe } = useStoreMeActions();
-
   return (
     <div
       onClick={() => {
@@ -227,12 +222,11 @@ It could be useful to reset some state with initial values, let's say when the u
 **There are three different reset options.** For convinience let's show them in one place:
 
 ```js
-import { useStoreMe, useStoreMeActions } from "store-me";
+import { useStoreMe, resetStoreMe } from "store-me";
 import { useEffect } from "react";
 
 const App = () => {
   const { user } = useStoreMe("user");
-  const { resetStoreMe } = useStoreMeActions();
 
   useEffect(() => {
     if (!user) {
@@ -256,7 +250,7 @@ const App = () => {
 In some spcific cases it could be useful to delete some state.
 
 ```js
-import { useStoreMe, useStoreMeActions } from "store-me";
+import { useStoreMe, deleteStoreMe } from "store-me";
 import { useEffect } from "react";
 
 // Current global state:
@@ -276,7 +270,6 @@ const globalState = {
 
 const App = () => {
   const { movies_id } = useStoreMe("movies_id");
-  const { deleteStoreMe } = useStoreMeActions();
 
   useEffect(() => {
     if (!user) {
@@ -298,14 +291,13 @@ Depending on the type of your applications you may need a way to fully control c
 The goal is to update the component only when it's visible on the screen. This is useful for cases when frequently updated components are not always visible because of a scroll.\ Imagine 200 hundred components in a scrollable list, showing the user profit changing 10 times per second.
 
 ```js
-import { useStoreMeActions } from "store-me";
+import { getStoreMe, storeMeSubscriber } from "store-me";
 import { useState, useEffect } from "react";
 import VisibilitySensor from "react-visibility-sensor";
 
 const subscriptionKeys = ["user", "language"];
 
 const App = () => {
-  const { storeMeSubscriber, getStoreMe } = useStoreMeActions();
   const [state, setState] = useState(getStoreMe(subscriptionKeys));
   const [isVisible, setIsVisible] = useState(true);
 
@@ -345,14 +337,13 @@ const App = () => {
 We are going to do the same thing with a different approach, just to show how much control you can have.
 
 ```js
-import { useStoreMeActions } from "store-me";
+import { getStoreMe, storeMeSubscriber } from "store-me";
 import { useState, useEffect, useRef } from "react";
 import VisibilitySensor from "react-visibility-sensor";
 
 const subscriptionKeys = ["user", "language"];
 
 const App = () => {
-  const { storeMeSubscriber, getStoreMe } = useStoreMeActions();
   const [state, setState] = useState(getStoreMe(subscriptionKeys));
   const isVisibleRef = useRef(true);
 
@@ -392,13 +383,12 @@ Controlling update frequency.
 Let's say the user profit is updated from the backend **10 times per second**. This data is going into your global state but because of reasons, you want to display the changes every **5 seconds**.
 
 ```js
-import { useStoreMeActions } from "store-me";
+import { getStoreMe, storeMeSubscriber } from "store-me";
 import { useState, useEffect, useRef } from "react";
 
 const subscriptionKeys = ["user", "language"];
 
 const App = () => {
-  const { storeMeSubscriber, getStoreMe } = useStoreMeActions();
   const [state, setState] = useState(getStoreMe(subscriptionKeys));
 
   const { user, language } = state;

@@ -75,7 +75,6 @@
       "browser": true
     },
     "globals": {
-      "__webpack_public_path__": true,
       "window": true
     },
     "rules": {
@@ -101,6 +100,7 @@
       "react-hooks/exhaustive-deps": 1
     }
   },
+  "eslintIgnore": ["/build/index.js"],
   "husky": {
     "hooks": {
       "pre-commit": "lint-staged"

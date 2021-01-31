@@ -6,7 +6,7 @@
 
 # Why "Store me"
 
-**"Store me"** was created to provide easy way of using a global state in **React** but also giving the option to fine tune if you need to heavily optimize your React app performance. **"Store me"** is using React Hooks to rerender components with latest state. This package is not working with class based React components.
+**"Store me"** was created to provide easy way of using a global state in **React** but also giving the option to fine tune if you need to heavily optimize your React app performance. **"Store me"** is using React Hooks to re-render components with latest state. This package is not working with class based React components.
 
 [API](#api)\
 [useStoreMe](#usestoreme)\
@@ -218,6 +218,8 @@ const App = () => {
 
 ## resetStoreMe
 
+#### Reset values to their original state
+
 It could be useful to reset some state with initial values, let's say when the user logs in or out.
 **There are three different reset options.** For convinience let's show them in one place:
 
@@ -247,7 +249,9 @@ const App = () => {
 
 ## deleteStoreMe
 
-In some spcific cases it could be useful to delete some state.
+#### Delete values from the state
+
+In specific cases it could be useful to delete some state.
 
 ```js
 import { useStoreMe, deleteStoreMe } from "store-me";
@@ -285,10 +289,12 @@ const App = () => {
 
 ## storeMeSubscriber
 
-Depending on the type of your applications you may need a way to fully control component updates. This is where the **"storeMeSubscriber"** comes into play. Let's see some possible usages and cases.
+#### Manually subscribe for state updates
+
+Depending on the type of your application you may need a way to fully control component updates. This is where the **"storeMeSubscriber"** comes into play. Let's see some possible usages and cases.
 
 **Example 1.**
-The goal is to update the component only when it's visible on the screen. This is useful for cases when frequently updated components are not always visible because of a scroll.\ Imagine 200 hundred components in a scrollable list, showing the user profit changing 10 times per second.
+The goal is to update the component only when it's visible on the screen. This is useful for cases when frequently updated components are not always visible because of a scroll. Imagine 200 components in a scrollable list, showing the user profit changing 10 times per second.
 
 ```js
 import { getStoreMe, storeMeSubscriber } from "store-me";
@@ -380,7 +386,7 @@ const App = () => {
 
 **Example 3.**
 Controlling update frequency.
-Let's say the user profit is updated from the backend **10 times per second**. This data is going into your global state but because of reasons, you want to display the changes every **5 seconds**.
+Let's say the user profit is updated from the backend **10 times per second**. This data is going into your global state but you want to display the changes every **5 seconds**.
 
 ```js
 import { getStoreMe, storeMeSubscriber } from "store-me";
@@ -424,7 +430,7 @@ const App = () => {
 
 ## useStoreMe
 
-Imagine that your application receives big list of movies to present. After receiving the initial list you will continue receive live and **frequent updates** for their ratings. If we have an array of 100 movie objects, then we update two of them, we will change the **entire list**, thus forcing React to re-render the entire list.
+Imagine that your application receives big list of movies to present. After receiving the initial list you will continue receive live and **frequent updates** for their ratings. If we have an array of 100 movie objects, then we update two of them, we will change the **entire list**, thus forcing React to re-render it.
 
 One possible solution is to write each movie as a separate value in the global state and keep one array of all movie IDs. Then we will render the list **once** using the array of IDs and **subscribe** each movie independantly.
 Later on if you need to add new movie in the list or sort the movies by some criteria, you will work with the array of IDs and cause re-render of the entire list only in those situations.

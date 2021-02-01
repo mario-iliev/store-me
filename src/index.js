@@ -128,13 +128,7 @@ const getStoreMe = (...accessors) => {
 
 const setStoreMe = (data, skipUiUpdate = false) => {
   if (typeof data === "function") {
-    const newStateObject = data({});
-
-    if (isObject(newStateObject)) {
-      const newStateKeys = Object.keys(newStateObject);
-
-      data = data(getStateWithOriginalStructure(newStateKeys));
-    }
+    data = data(getStateWithOriginalStructure());
   }
 
   if (isObject(data)) {
@@ -271,11 +265,12 @@ function syncPrevAndCurrentData(keysToSync) {
   });
 }
 
-function getStateWithOriginalStructure(accessors) {
+function getStateWithOriginalStructure() {
+  const keys = Object.keys(state);
   const result = {};
 
-  accessors.forEach(accessor => {
-    result[accessor] = cloneDeep(state[accessor]?.current);
+  keys.forEach(key => {
+    result[key] = cloneDeep(state[key]?.current);
   });
 
   return result;

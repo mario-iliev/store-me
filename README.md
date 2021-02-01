@@ -185,33 +185,12 @@ const App = () => {
           setStoreMe(globalState => {
             const { user } = globalState;
 
-            return {
-              isMenuExpanded: user && user.age > 18 ? true : false,
-              user,
-            };
+            return { isMenuExpanded: user && user.age > 18 ? true : false };
           });
         }}
       >
         Open Menu if user is logged in and more than 18 years old.
       </div>
-
-      /* Important! If you use the dynamic "previousState" function update, it will
-      always be an object with previous values that you are trying to change.
-      For example:
-      */
-
-      setStoreMe(previousState => {
-        console.log(previousState);
-        /*
-          {
-            isMenuExpanded: true
-          }
-        */
-
-        return {
-          isMenuExpanded: !previousState.isMenuExpanded,
-        };
-      });
     </>
   );
 };

@@ -3,6 +3,7 @@ import { useEffect, useState, useMemo, useRef } from "react";
 import cloneDeep from "../utils/cloneDeep";
 import isObject from "../utils/isObject";
 
+const componentsToUpdate = {};
 const subscriptions = {};
 let lastSubscriptionId = 0;
 let storeMeInitialState;
@@ -85,7 +86,6 @@ const storeMeSubscriber = (accessors, callback) => {
 
 const runStoreMeSubscriptions = (ignoreCompares, newStateKeys) => {
   const ids = Object.keys(subscriptions);
-  const componentsToUpdate = [];
 
   ids.forEach(id => {
     if (subscriptions[id]) {
@@ -93,16 +93,16 @@ const runStoreMeSubscriptions = (ignoreCompares, newStateKeys) => {
       const data = getDataAndCompareChanges(accessors, ignoreCompares, newStateKeys);
 
       if (data !== "skip_update") {
-        componentsToUpdate.push({
+        componentsToUpdate[id] = {
           id,
           update: () => callback(data),
           accessors: accessors.firstLevel,
-        });
+        };
       }
     }
   });
 
-  updateComponentsAndSyncState(componentsToUpdate);
+  updateComponentsAndSyncState();
 };
 
 const getStoreMe = (...accessors) => {
@@ -291,17 +291,15 @@ function doesAccessorContainsNewStateKeys(accessors, newStateKeys) {
   return result;
 }
 
-function updateComponentsAndSyncState(queue) {
-  const componentToUpdate = queue.shift();
-
-  if (componentToUpdate) {
-    const { id, update, accessors } = componentToUpdate;
+function updateComponentsAndSyncState() {
+  for (let recordId in componentsToUpdate) {
+    const { id, update, accessors } = componentsToUpdate[recordId];
 
     syncPrevAndCurrentData(accessors);
 
-    subscriptions[id] && update();
+    delete componentsToUpdate[recordId];
 
-    queue.length && updateComponentsAndSyncState(queue);
+    subscriptions[id] && update();
   }
 }
 

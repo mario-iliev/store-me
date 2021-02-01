@@ -642,6 +642,15 @@ _Arguments:_
 
 ---
 
+**renderStoreMe**\
+[Example](#renderstoreme)\
+_Type:_ `Function`\
+_Arguments:_
+
+- `string/s` or `number/s` representing a **key/s** in the global state. **"Store me"** will re-render the UI for the specified accessors (if they were not rendered already).
+
+---
+
 **storeMeSubscriber**\
 [Example](#storemesubscriber)\
 _Type:_ `Function`\

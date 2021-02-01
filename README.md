@@ -8,13 +8,13 @@
 
 **"Store me"** was created to provide easy way of using a global state in **React** but also giving the option to fine tune if you need to heavily optimize your React app performance. **"Store me"** is using React Hooks to re-render components with latest state. This package is not working with class based React components.
 
-[API](#api)\
-[useStoreMe](#usestoreme)\
-[setStoreMe](#setstoreme)\
-[getStoreMe](#getstoreme)\
-[resetStoreMe](#resetstoreme)\
-[deleteStoreMe](#deletestoreme)\
-[storeMeSubscriber](#storemesubscriber)
+[API](#api)
+
+| Base methods              | Helpful methods                 | Fine tuning for complex cases           |
+| ------------------------- | ------------------------------- | --------------------------------------- |
+| [useStoreMe](#usestoreme) | [getStoreMe](#getstoreme)       | [renderStoreMe](#renderstoreme)         |
+| [setStoreMe](#setstoreme) | [resetStoreMe](#resetstoreme)   | [storeMeSubscriber](#storemesubscriber) |
+|                           | [deleteStoreMe](#deletestoreme) |                                         |
 
 ## Installation
 
@@ -185,12 +185,33 @@ const App = () => {
           setStoreMe(globalState => {
             const { user } = globalState;
 
-            return { isMenuExpanded: user && user.age > 18 ? true : false };
+            return {
+              isMenuExpanded: user && user.age > 18 ? true : false,
+              user,
+            };
           });
         }}
       >
         Open Menu if user is logged in and more than 18 years old.
       </div>
+
+      /* Important! If you use the dynamic "previousState" function update, it will
+      always be an object with previous values that you are trying to change.
+      For example:
+      */
+
+      setStoreMe(previousState => {
+        console.log(previousState);
+        /*
+          {
+            isMenuExpanded: true
+          }
+        */
+
+        return {
+          isMenuExpanded: !previousState.isMenuExpanded,
+        };
+      });
     </>
   );
 };
@@ -290,6 +311,13 @@ const App = () => {
   return <div>{user ? `Hello, ${user.name}` : "Click here to log in."}</div>;
 };
 ```
+
+## renderStoreMe
+
+#### Update React UI on demand
+
+You will need this **only if** you use the second argument of [setStoreMe](#setstoreme)\
+An example can be seen in the [Performance recepies](#setstoreme-and-renderstoreme)
 
 # Performance recepies
 
@@ -474,6 +502,80 @@ const Movie = movie_id => {
 };
 ```
 
+## setStoreMe and renderStoreMe
+
+Image that your application receives stream of data trough webSockets, severl times per second.
+Multiple channels are sending different data which you want to display **at once** every 5 seconds.
+Combinig the **second argument** of **setStoreMe** and manually render specific UI changes can achieve exactly this.
+
+```js
+// Current global state:
+const globalState = {
+  // Constanly updated 4 times per second
+  movies_ratings: [
+    { id: 1, rating: 7.5 },
+    { id: 2, rating: 9 },
+  ],
+  // Constanly updated 2 times per second
+  profits_by_rating: [
+    { id: 1, profit: 760040 },
+    { id: 2, profit: 1260040 },
+  ],
+  // Constanly updated 5 times per second
+  comments: [
+    { id: 1, text: "I love this movie..." },
+    { id: 2, text: "I've seen better..." },
+  ],
+};
+
+const App = () => {
+  useEffect(() => {
+    subscribeForMovieRatings(movies_ratings => {
+      setStoreMe({ movies_ratings }, true);
+    });
+
+    subscribeForMovieProfits(profits_by_rating => {
+      setStoreMe({ profits_by_rating }, true);
+    });
+
+    subscribeForMovieComments(comments => {
+      setStoreMe({ comments }, true);
+    });
+  }, []);
+
+  return <Consumer />;
+};
+
+const Consumer = () => {
+  const { movies_ratings, profits_by_rating, comments } = useStoreMe(
+    "movies_id"
+  );
+
+  useEffect(() => {
+    let lastUpdateTime = 0;
+
+    const initAnimationFrame = (time = 0) => {
+      requestAnimationFrame(initAnimationFrame);
+
+      if (time - lastUpdateTime >= 5000) {
+        lastUpdateTime = time;
+        renderStoreMe("movies_ratings", "profits_by_rating", "comments");
+      }
+    };
+
+    initAnimationFrame();
+  }, []);
+
+  return (
+    <div>
+      Ratings: {movies_ratings.map(({ rating }) => rating)} <br />
+      Profits: {profits_by_rating.map(({ profit }) => profit)} <br />
+      Comments: {comments.map(({ text }) => text)} <br />
+    </div>
+  );
+};
+```
+
 # API
 
 **StoreMe**\
@@ -504,6 +606,9 @@ _Arguments:_
 
 - `object` with single or multiple values.
 - `function` which should return an object. By using the function you will receive the entire state as an argument to it. This is the same as using the React `setState(prevCount => prevCount + 1)`
+
+There is a second possible `boolean` argument which by default is set to `false`. If passed as true, **"StoreMe"** **will not render** those updates to the UI.
+This option should be used with caution. Example usage can be seen [here](#setstoreme+rennderstoreme)\
 
 ---
 

@@ -105,8 +105,12 @@ const runStoreMeSubscriptions = (ignoreCompares, newStateKeys) => {
   updateComponentsAndSyncState(componentsToUpdate);
 };
 
-const getStoreMe = accessors => {
-  if (Array.isArray(accessors) && accessors.length) {
+const getStoreMe = (...accessors) => {
+  if (accessors.length && Array.isArray(accessors[0])) {
+    accessors = accessors[0];
+  }
+
+  if (accessors.length) {
     accessors = {
       structured: createStructuredAccessors(accessors),
       firstLevel: createFirstLevelAccessors(accessors),
@@ -122,9 +126,15 @@ const getStoreMe = accessors => {
   }
 };
 
-const setStoreMe = data => {
+const setStoreMe = (data, skipUiUpdate = false) => {
   if (typeof data === "function") {
-    data = data(getStateWithOriginalStructure());
+    const newStateObject = data({});
+
+    if (isObject(newStateObject)) {
+      const newStateKeys = Object.keys(newStateObject);
+
+      data = data(getStateWithOriginalStructure(newStateKeys));
+    }
   }
 
   if (isObject(data)) {
@@ -147,7 +157,7 @@ const setStoreMe = data => {
       }
     });
 
-    shouldRunSubscriptions && runStoreMeSubscriptions(false, keys);
+    !skipUiUpdate && shouldRunSubscriptions && runStoreMeSubscriptions(false, keys);
   } else {
     console.error(`"setStoreMe" expects argument of type object or function.`);
   }
@@ -200,13 +210,17 @@ const deleteStoreMe = (...accessors) => {
   }
 };
 
-const dangerouslyGetStoreMeMutableState = () => state;
+const renderStoreMe = (...accessors) => {
+  if (accessors.length && Array.isArray(accessors[0])) {
+    accessors = accessors[0];
+  }
+
+  runStoreMeSubscriptions(false, accessors.length ? accessors : null);
+};
 
 function createInitialStateStructure(initialState) {
   const keys = Object.keys(initialState);
   const result = {};
-
-  keys.push("stopStoreMeUiUpdates");
 
   keys.forEach(key => {
     result[key] = {
@@ -257,15 +271,14 @@ function syncPrevAndCurrentData(keysToSync) {
   });
 }
 
-function getStateWithOriginalStructure() {
-  const keys = Object.keys(state);
+function getStateWithOriginalStructure(accessors) {
   const result = {};
 
-  keys.forEach(key => {
-    result[key] = state[key].current;
+  accessors.forEach(accessor => {
+    result[accessor] = cloneDeep(state[accessor]?.current);
   });
 
-  return cloneDeep(result);
+  return result;
 }
 
 function doesAccessorContainsNewStateKeys(accessors, newStateKeys) {
@@ -298,11 +311,11 @@ function updateComponentsAndSyncState(queue) {
 }
 
 const StoreMe = ({ initialState = {}, children }) => {
-  storeMeInitialState = initialState;
-
-  Object.freeze(storeMeInitialState);
-
   if (!state) {
+    storeMeInitialState = initialState;
+
+    Object.freeze(storeMeInitialState);
+
     state = createInitialStateStructure(storeMeInitialState);
   }
 
@@ -333,6 +346,6 @@ export {
   getStoreMe,
   resetStoreMe,
   deleteStoreMe,
+  renderStoreMe,
   storeMeSubscriber,
-  dangerouslyGetStoreMeMutableState,
 };

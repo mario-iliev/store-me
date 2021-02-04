@@ -60,6 +60,12 @@ import App from "./App";
 </StoreMe>;
 ```
 
+[Read more](#api) about the debug prop and how it can help you.
+
+```js
+<StoreMe debug={[1, 3]}>
+```
+
 ## useStoreMe
 
 ```js
@@ -560,7 +566,23 @@ const Consumer = () => {
 **StoreMe**\
 [Example](#wrap-your-application-and-provide-the-initial-state)\
 _Type:_ `Component`\
-_Arguments:_ `initialState` of type object `{}`\
+_Arguments:_
+
+- `initialState` of type object `{}`
+- `debug` accepts `array` with `number` values. Example: `<StoreMe debug={[1, 2, 3]}>`\
+  Currently there are 3 logs which you can see independantly by specifying their ID in the array.
+
+  - 1 - Will show you how much time was needed for React to render the components which were affected of the last state change.
+    This could help you to find components that take too much time to render and optimize them.\
+     Example output:\
+    `[1] React updated and rendered 005 components for 10.8799999980 ms [Array(5)]`
+  - 2 - Will show you the time needed for StoreMe to check the new state differences and decide which component should be updated.\
+    Example output:\
+    `[2] StoreMe bilt components state for 1.8199999976786785 ms`
+  - 3 - Will show you how many components are currently connected to StoreMe.\
+    Example output:\
+    `[3] Current StoreMe connected components: 2672`
+
 _Returns:_ `children` prop
 
 ---

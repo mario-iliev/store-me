@@ -2,6 +2,7 @@ import { useEffect, useState, useMemo, useRef } from "react";
 
 import cloneDeep from "../utils/cloneDeep";
 import isObject from "../utils/isObject";
+import log from "../utils/log";
 
 const componentsToUpdate = {};
 const subscriptions = {};
@@ -87,20 +88,36 @@ const storeMeSubscriber = (accessors, callback) => {
 const runStoreMeSubscriptions = (ignoreCompares, newStateKeys) => {
   const ids = Object.keys(subscriptions);
 
-  ids.forEach(id => {
-    if (subscriptions[id]) {
-      const { accessors, callback } = subscriptions[id];
-      const data = getDataAndCompareChanges(accessors, ignoreCompares, newStateKeys);
+  function init() {
+    ids.forEach(id => {
+      if (subscriptions[id]) {
+        const { accessors, callback } = subscriptions[id];
+        const data = getDataAndCompareChanges(accessors, ignoreCompares, newStateKeys);
 
-      if (data !== "skip_update") {
-        componentsToUpdate[id] = {
-          id,
-          update: () => callback(data),
-          accessors: accessors.firstLevel,
-        };
+        if (data !== "skip_update") {
+          componentsToUpdate[id] = {
+            id,
+            update: () => callback(data),
+            accessors: accessors.firstLevel,
+          };
+        }
       }
-    }
-  });
+    });
+  }
+
+  if (log.debugDataBuildTime) {
+    const start = performance.now();
+
+    init();
+
+    log.dataBuildTime(performance.now() - start);
+  } else {
+    init();
+  }
+
+  if (log.debugSubscriptions) {
+    log.subscriptionsCount(ids.length);
+  }
 
   updateComponentsAndSyncState();
 };
@@ -119,7 +136,8 @@ const getStoreMe = (...accessors) => {
     return getDataAndCompareChanges(accessors, true);
   } else {
     console.error(
-      `"getStoreMe" expects arguments of type string or number, specifying key in state.`
+      `"getStoreMe" expects arguments of type string or number, specifying key in state.`,
+      accessors
     );
 
     return {};
@@ -139,12 +157,12 @@ const setStoreMe = (data, skipUiUpdate = false) => {
       if (state.hasOwnProperty(key)) {
         if (state[key].current !== data[key]) {
           shouldRunSubscriptions = true;
-          state[key].current = window[key] ? data[key] : cloneDeep(data[key]);
+          state[key].current = cloneDeep(data[key]);
         }
       } else {
         shouldRunSubscriptions = true;
         state[key] = {
-          default: window[key] ? data[key] : cloneDeep(data[key]),
+          default: cloneDeep(data[key]),
           previous: "non-existent",
           current: data[key],
         };
@@ -153,7 +171,7 @@ const setStoreMe = (data, skipUiUpdate = false) => {
 
     !skipUiUpdate && shouldRunSubscriptions && runStoreMeSubscriptions(false, keys);
   } else {
-    console.error(`"setStoreMe" expects argument of type object or function.`);
+    console.error(`"setStoreMe" expects argument of type object or function.`, data);
   }
 };
 
@@ -199,7 +217,8 @@ const deleteStoreMe = (...accessors) => {
     shouldRunSubscriptions && runStoreMeSubscriptions(true, accessors);
   } else {
     console.error(
-      `"deleteStoreMe" expects arguments of type string or number, specifying key in state.`
+      `"deleteStoreMe" expects arguments of type string or number, specifying key in state.`,
+      accessors
     );
   }
 };
@@ -218,8 +237,8 @@ function createInitialStateStructure(initialState) {
 
   keys.forEach(key => {
     result[key] = {
-      default: window[key] ? initialState[key] : cloneDeep(initialState[key]),
-      previous: window[key] ? initialState[key] : cloneDeep(initialState[key]),
+      default: cloneDeep(initialState[key]),
+      previous: cloneDeep(initialState[key]),
       current: initialState[key],
     };
   });
@@ -292,24 +311,50 @@ function doesAccessorContainsNewStateKeys(accessors, newStateKeys) {
 }
 
 function updateComponentsAndSyncState() {
-  for (let recordId in componentsToUpdate) {
-    const { id, update, accessors } = componentsToUpdate[recordId];
+  function initialize() {
+    const ids = Object.keys(componentsToUpdate).reverse();
 
-    syncPrevAndCurrentData(accessors);
+    ids.forEach(recordId => {
+      if (componentsToUpdate[recordId]) {
+        const { id, update, accessors } = componentsToUpdate[recordId];
 
-    delete componentsToUpdate[recordId];
+        syncPrevAndCurrentData(accessors);
 
-    subscriptions[id] && update();
+        delete componentsToUpdate[recordId];
+
+        subscriptions[id] && update();
+      }
+    });
+  }
+
+  if (log.debugUpdateTime) {
+    const componentsCount = String(Object.keys(componentsToUpdate).length).padStart(3, "0");
+    const accessors = [Object.values(componentsToUpdate).map(item => item.accessors.join(", "))];
+    const start = performance.now();
+
+    initialize();
+
+    const time = (performance.now() - start).toFixed(10);
+
+    log.measureUpdate(componentsCount, time, accessors);
+  } else {
+    initialize();
   }
 }
 
-const StoreMe = ({ initialState = {}, children }) => {
+const StoreMe = ({ initialState = {}, debug = [], children }) => {
   if (!state) {
     storeMeInitialState = initialState;
 
     Object.freeze(storeMeInitialState);
 
     state = createInitialStateStructure(storeMeInitialState);
+  }
+
+  if (Array.isArray(debug)) {
+    log.debugUpdateTime = debug.includes(1);
+    log.debugDataBuildTime = debug.includes(2);
+    log.debugSubscriptions = debug.includes(3);
   }
 
   return children;

@@ -123,7 +123,7 @@ const runStoreMeSubscriptions = (ignoreCompares, newStateKeys) => {
 };
 
 const getStoreMe = (...accessors) => {
-  if (accessors.length && Array.isArray(accessors[0])) {
+  if (Array.isArray(accessors[0])) {
     accessors = accessors[0];
   }
 
@@ -178,6 +178,10 @@ const setStoreMe = (data, skipUiUpdate = false) => {
 const resetStoreMe = (...accessors) => {
   let shouldRunSubscriptions = false;
 
+  if (Array.isArray(accessors[0])) {
+    accessors = accessors[0];
+  }
+
   accessors = accessors || Object.keys(state);
 
   if (accessors.length === 1 && accessors[0] === "initial-store-me") {
@@ -203,6 +207,10 @@ const resetStoreMe = (...accessors) => {
 };
 
 const deleteStoreMe = (...accessors) => {
+  if (Array.isArray(accessors[0])) {
+    accessors = accessors[0];
+  }
+
   if (accessors.length) {
     let shouldRunSubscriptions = false;
 
@@ -224,7 +232,7 @@ const deleteStoreMe = (...accessors) => {
 };
 
 const renderStoreMe = (...accessors) => {
-  if (accessors.length && Array.isArray(accessors[0])) {
+  if (Array.isArray(accessors[0])) {
     accessors = accessors[0];
   }
 

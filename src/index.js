@@ -1,8 +1,9 @@
 import { useEffect, useState, useMemo, useRef } from "react";
+import equal from "fast-deep-equal";
 
-import cloneDeep from "../utils/cloneDeep";
-import isObject from "../utils/isObject";
-import log from "../utils/log";
+import cloneDeep from "./utils/cloneDeep";
+import isObject from "./utils/isObject";
+import log from "./utils/log";
 
 const componentsToUpdate = {};
 const subscriptions = {};
@@ -146,7 +147,20 @@ const getStoreMe = (...accessors) => {
 
 const setStoreMe = (data, skipUiUpdate = false) => {
   if (typeof data === "function") {
-    data = data(getStateWithOriginalStructure());
+    if (process.env.NODE_ENV === "development") {
+      const stateForConsumer = getStateWithOriginalStructure();
+      const stateBeforePotentialMutation = cloneDeep(stateForConsumer);
+
+      data = data(stateForConsumer);
+
+      if (!equal(stateBeforePotentialMutation, stateForConsumer)) {
+        const message = `You have mutated "StoreMe" global state. Clone the data before changing it.`;
+
+        console.error(message, data ? "This happened when you set: " : "", data ? data : "");
+      }
+    } else {
+      data = data(getStateWithOriginalStructure());
+    }
   }
 
   if (isObject(data)) {
@@ -171,7 +185,7 @@ const setStoreMe = (data, skipUiUpdate = false) => {
 
     !skipUiUpdate && shouldRunSubscriptions && runStoreMeSubscriptions(false, keys);
   } else {
-    console.error(`"setStoreMe" expects argument of type object or function.`, data);
+    console.error(`"setStoreMe" expects argument of type object or function but received: `, data);
   }
 };
 
@@ -297,7 +311,7 @@ function getStateWithOriginalStructure() {
   const result = {};
 
   keys.forEach(key => {
-    result[key] = cloneDeep(state[key]?.current);
+    result[key] = state[key]?.current;
   });
 
   return result;

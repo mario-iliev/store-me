@@ -1,6 +1,6 @@
 {
   "name": "store-me",
-  "version": "1.3.2",
+  "version": "1.3.3",
   "description": "Fast, flexible and lightweight global state manager for React. Provides two APIs for both basic and more complex cases allowing you to control component updates.",
   "author": "Mario Iliev",
   "license": "MIT",

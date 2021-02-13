@@ -352,7 +352,8 @@ An example can be seen in the [Performance recepies](#setstoreme-and-renderstore
 
 Depending on the type of your application you may need a way to fully control component updates. This is where the **"storeMeSubscriber"** comes into play. Let's see some possible usages and cases.
 
-**Example 1.**
+#### **Example 1.**
+
 The goal is to update the component only when it's visible on the screen. This is useful for cases when frequently updated components are not always visible because of a scroll. Imagine 200 components in a scrollable list, showing the user profit changing 10 times per second.
 
 ```js
@@ -398,7 +399,8 @@ const App = () => {
 };
 ```
 
-**Example 2.**
+#### **Example 2.**
+
 We are going to do the same thing with a different approach, just to show how much control you can have.
 
 ```js
@@ -443,7 +445,8 @@ const App = () => {
 };
 ```
 
-**Example 3.**
+#### **Example 3.**
+
 Controlling update frequency.
 Let's say the user profit is updated from the backend **10 times per second**. This data is going into your global state but you want to display the changes every **5 seconds**.
 
@@ -627,7 +630,8 @@ _Returns:_ `children` prop
 
 ---
 
-**useStoreMe**\
+#### useStoreMe
+
 [Example](#usestoreme)\
 _Type:_ `Hook/Function`\
 _Arguments:_ `string` or `number`. Single or multiple separated by comma. The are three types of accessors.
@@ -640,7 +644,8 @@ _Arguments:_ `string` or `number`. Single or multiple separated by comma. The ar
 
 ---
 
-**setStoreMe**\
+#### setStoreMe
+
 [Example](#setstoreme)\
 _Type:_ `Function`\
 _Arguments:_
@@ -653,7 +658,8 @@ This option should be used with caution. Example usage can be seen [here](#setst
 
 ---
 
-**getStoreMe**\
+#### getStoreMe
+
 [Example](#getstoreme)\
 _Type:_ `Function`\
 _Arguments:_ The same as **useStoreMe**. The are two differences with the **useStoreMe** method.
@@ -663,7 +669,8 @@ _Arguments:_ The same as **useStoreMe**. The are two differences with the **useS
 
 ---
 
-**resetStoreMe**\
+#### resetStoreMe
+
 [Example](#resetstoreme)\
 _Type:_ `Function`\
 _Arguments:_
@@ -674,7 +681,8 @@ _Arguments:_
 
 ---
 
-**deleteStoreMe**\
+#### deleteStoreMe
+
 [Example](#deletestoreme)\
 _Type:_ `Function`\
 _Arguments:_
@@ -683,7 +691,8 @@ _Arguments:_
 
 ---
 
-**renderStoreMe**\
+#### renderStoreMe
+
 [Example](#renderstoreme)\
 _Type:_ `Function`\
 _Arguments:_
@@ -692,7 +701,8 @@ _Arguments:_
 
 ---
 
-**storeMeSubscriber**\
+#### storeMeSubscriber
+
 [Example](#storemesubscriber)\
 _Type:_ `Function`\
 _Arguments:_

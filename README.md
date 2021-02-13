@@ -8,8 +8,6 @@
 
 **"Store me"** was created to provide easy way of using a global state in **React** but also giving the option to fine tune if you need to heavily optimize your React app performance. **"Store me"** is using React Hooks to re-render components with latest state. This package is not working with class based React components.
 
-[API](#api)
-
 | Base methods              | Helpful methods                 | Fine tuning for complex cases           |
 | ------------------------- | ------------------------------- | --------------------------------------- |
 | [useStoreMe](#usestoreme) | [getStoreMe](#getstoreme)       | [renderStoreMe](#renderstoreme)         |
@@ -152,6 +150,48 @@ const App = () => {
   */
 
   return <div>Click here to log in</div>;
+};
+```
+
+#### With dynamic accessor
+
+In the following example we will dynamically change the accessor and **"StoreMe"** will automatically re-subscribe to it.
+
+```js
+const globalState = {
+  0: {
+    name: "Batman",
+    year: 1989,
+    rating: 7.5,
+  },
+  1: {
+    name: "The Matrix",
+    year: 1999,
+    rating: 8.7,
+  },
+};
+
+const App = () => {
+  const [currentMovieId, setCurrentMovieId] = useState(0);
+
+  return (
+    <div>
+      <div onClick={() => setCurrentMovieId(prevId => prevId + 1)}>
+        Click here for next movie
+      </div>
+      <MovieView movie_id={currentMovieId} />
+    </div>
+  );
+};
+
+const MovieView = movie_id => {
+  const { [movie_id]: movie } = useStoreMe(movie_id);
+
+  return (
+    <div>
+      Movie {movie.name} - {movie.year} | Rating: ${movie.rating}
+    </div>
+  );
 };
 ```
 

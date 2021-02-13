@@ -1,8 +1,18 @@
 import { useEffect, useState, useMemo, useRef } from "react";
-import equal from "fast-deep-equal";
 
-import cloneDeep from "./utils/cloneDeep";
-import isObject from "./utils/isObject";
+import { detectedBadAccessors, detectMutatedState } from "./utils/dev";
+import {
+  doesAccessorContainsNewStateKeys,
+  getStateWithOriginalStructure,
+  updateComponentsAndSyncState,
+  createInitialStateStructure,
+  createStructuredAccessors,
+  createFirstLevelAccessors,
+  createNestedObjectTree,
+  areAccessorsDifferent,
+} from "./utils/store-me";
+import cloneDeep from "./utils/clone-deep";
+import isObject from "./utils/is-object";
 import log from "./utils/log";
 
 const componentsToUpdate = {};
@@ -71,19 +81,30 @@ const getDataAndCompareChanges = (accessors, ignoreCompares = false, newStateKey
 };
 
 const storeMeSubscriber = (accessors, callback) => {
-  const id = lastSubscriptionId++;
+  if (accessors.length) {
+    if (process.env.NODE_ENV === "development" && detectedBadAccessors(accessors)) {
+      return () => {};
+    }
 
-  subscriptions[id] = {
-    callback,
-    accessors: {
-      structured: createStructuredAccessors(accessors),
-      firstLevel: createFirstLevelAccessors(accessors),
-    },
-  };
+    const id = lastSubscriptionId++;
 
-  return () => {
-    delete subscriptions[id];
-  };
+    subscriptions[id] = {
+      callback,
+      accessors: {
+        structured: createStructuredAccessors(accessors),
+        firstLevel: createFirstLevelAccessors(accessors),
+      },
+    };
+
+    return () => {
+      delete subscriptions[id];
+    };
+  } else {
+    console.error(
+      `"storeMeSubscriber" expects at least one argument of type string or number, specifying key in state.`,
+      accessors
+    );
+  }
 };
 
 const runStoreMeSubscriptions = (ignoreCompares, newStateKeys) => {
@@ -120,7 +141,7 @@ const runStoreMeSubscriptions = (ignoreCompares, newStateKeys) => {
     log.subscriptionsCount(ids.length);
   }
 
-  updateComponentsAndSyncState();
+  updateComponentsAndSyncState(state, subscriptions, componentsToUpdate);
 };
 
 const getStoreMe = (...accessors) => {
@@ -129,6 +150,10 @@ const getStoreMe = (...accessors) => {
   }
 
   if (accessors.length) {
+    if (process.env.NODE_ENV === "development" && detectedBadAccessors(accessors)) {
+      return {};
+    }
+
     accessors = {
       structured: createStructuredAccessors(accessors),
       firstLevel: createFirstLevelAccessors(accessors),
@@ -137,7 +162,7 @@ const getStoreMe = (...accessors) => {
     return getDataAndCompareChanges(accessors, true);
   } else {
     console.error(
-      `"getStoreMe" expects arguments of type string or number, specifying key in state.`,
+      `"getStoreMe" expects at least one argument of type string or number, specifying key in state.`,
       accessors
     );
 
@@ -147,20 +172,9 @@ const getStoreMe = (...accessors) => {
 
 const setStoreMe = (data, skipUiUpdate = false) => {
   if (typeof data === "function") {
-    if (process.env.NODE_ENV === "development") {
-      const stateForConsumer = getStateWithOriginalStructure();
-      const stateBeforePotentialMutation = cloneDeep(stateForConsumer);
+    process.env.NODE_ENV === "development" && detectMutatedState(state, data);
 
-      data = data(stateForConsumer);
-
-      if (!equal(stateBeforePotentialMutation, stateForConsumer)) {
-        const message = `You have mutated "StoreMe" global state. Clone the data before changing it.`;
-
-        console.error(message, data ? "This happened when you set: " : "", data ? data : "");
-      }
-    } else {
-      data = data(getStateWithOriginalStructure());
-    }
+    data = data(getStateWithOriginalStructure(state));
   }
 
   if (isObject(data)) {
@@ -196,6 +210,10 @@ const resetStoreMe = (...accessors) => {
     accessors = accessors[0];
   }
 
+  if (process.env.NODE_ENV === "development" && detectedBadAccessors(accessors)) {
+    return;
+  }
+
   accessors = accessors || Object.keys(state);
 
   if (accessors.length === 1 && accessors[0] === "initial-store-me") {
@@ -226,6 +244,10 @@ const deleteStoreMe = (...accessors) => {
   }
 
   if (accessors.length) {
+    if (process.env.NODE_ENV === "development" && detectedBadAccessors(accessors)) {
+      return;
+    }
+
     let shouldRunSubscriptions = false;
 
     accessors.forEach(accessor => {
@@ -250,119 +272,12 @@ const renderStoreMe = (...accessors) => {
     accessors = accessors[0];
   }
 
+  if (process.env.NODE_ENV === "development" && detectedBadAccessors(accessors)) {
+    return;
+  }
+
   runStoreMeSubscriptions(false, accessors.length ? accessors : null);
 };
-
-function createInitialStateStructure(initialState) {
-  const keys = Object.keys(initialState);
-  const result = {};
-
-  keys.forEach(key => {
-    result[key] = {
-      default: cloneDeep(initialState[key]),
-      previous: cloneDeep(initialState[key]),
-      current: initialState[key],
-    };
-  });
-
-  return result;
-}
-
-function createNestedObjectTree(keys, value) {
-  return keys.reverse().reduce((result, key) => {
-    const res = { [key]: result };
-
-    if (result === value) {
-      result = {};
-    }
-
-    return res;
-  }, value);
-}
-
-function createStructuredAccessors(accessors) {
-  return accessors.map(accessor => {
-    accessor = String(accessor).split(".");
-
-    if (accessor.length > 1) {
-      accessor = accessor.map(value =>
-        String(value).includes("[") ? String(value).replace(/\[|\]/g, "").split("|") : value
-      );
-    }
-
-    return accessor;
-  });
-}
-
-function createFirstLevelAccessors(accessors) {
-  return accessors.map(accessor => String(accessor).split(".").shift());
-}
-
-function syncPrevAndCurrentData(keysToSync) {
-  (keysToSync || Object.keys(state)).forEach(key => {
-    if (state.hasOwnProperty(key)) {
-      state[key].previous = state[key].current;
-    }
-  });
-}
-
-function getStateWithOriginalStructure() {
-  const keys = Object.keys(state);
-  const result = {};
-
-  keys.forEach(key => {
-    result[key] = state[key]?.current;
-  });
-
-  return result;
-}
-
-function doesAccessorContainsNewStateKeys(accessors, newStateKeys) {
-  const length = newStateKeys.length;
-  let result = false;
-  let i = 0;
-
-  for (i; i < length; i++) {
-    if (accessors.includes(newStateKeys[i])) {
-      result = true;
-      break;
-    }
-  }
-
-  return result;
-}
-
-function updateComponentsAndSyncState() {
-  function initialize() {
-    const ids = Object.keys(componentsToUpdate).reverse();
-
-    ids.forEach(recordId => {
-      if (componentsToUpdate[recordId]) {
-        const { id, update, accessors } = componentsToUpdate[recordId];
-
-        syncPrevAndCurrentData(accessors);
-
-        delete componentsToUpdate[recordId];
-
-        subscriptions[id] && update();
-      }
-    });
-  }
-
-  if (log.debugUpdateTime) {
-    const componentsCount = String(Object.keys(componentsToUpdate).length).padStart(3, "0");
-    const accessors = [Object.values(componentsToUpdate).map(item => item.accessors.join(", "))];
-    const start = performance.now();
-
-    initialize();
-
-    const time = (performance.now() - start).toFixed(10);
-
-    log.measureUpdate(componentsCount, time, accessors);
-  } else {
-    initialize();
-  }
-}
 
 const StoreMe = ({ initialState = {}, debug = [], children }) => {
   if (!state) {
@@ -383,20 +298,40 @@ const StoreMe = ({ initialState = {}, debug = [], children }) => {
 };
 
 const useStoreMe = (...accessors) => {
-  const memoizedAccessors = useRef(accessors);
-  const [state, setState] = useState(useMemo(() => getStoreMe(memoizedAccessors.current), []));
+  const lastAccessors = useRef(accessors);
+  const stateUsesLastAccessors = useRef(1);
+  const manuallyFetchedState = useRef();
+  const subscription = useRef();
+  const [state, setState] = useState(useMemo(() => getStoreMe(lastAccessors.current), []));
+  const accessorsAreDifferent = areAccessorsDifferent(lastAccessors.current, accessors);
 
-  useEffect(() => {
-    if (memoizedAccessors.current.length) {
-      const subscription = storeMeSubscriber(memoizedAccessors.current, setState);
+  if (accessorsAreDifferent || !subscription.current) {
+    if (accessorsAreDifferent) {
+      lastAccessors.current = accessors;
+      stateUsesLastAccessors.current = 0;
+      manuallyFetchedState.current = lastAccessors.current.length
+        ? getStoreMe(lastAccessors.current)
+        : {};
 
-      return () => subscription();
+      subscription.current();
+    }
+
+    if (lastAccessors.current.length) {
+      subscription.current = storeMeSubscriber(lastAccessors.current, newState => {
+        stateUsesLastAccessors.current = 1;
+
+        setState(newState);
+      });
     } else {
       console.error(`"useStoreMe": At least one accessor must be specified`);
     }
+  }
+
+  useEffect(() => {
+    return () => subscription.current();
   }, []);
 
-  return state;
+  return stateUsesLastAccessors.current ? state : manuallyFetchedState.current;
 };
 
 export {

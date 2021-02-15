@@ -1,22 +1,27 @@
-## [v1.4.0](https://github.com/mario-iliev/store-me/commit/0625c0c01ba4ec57c390171ffb2d6e1b099f7937) (13-02-2021)
+## [v1.4.4](https://github.com/mario-iliev/store-me/tree/1afe746bef7dc72c2a1cd062a4cdcc4a2eaf7a2c) (15-02-2021)
+
+- Fix sync bug when using manual UI update with renderStoreMe
+- Optimize some functions for more performance
+
+## [v1.4.0](https://github.com/mario-iliev/store-me/tree/0625c0c01ba4ec57c390171ffb2d6e1b099f7937) (13-02-2021)
 
 #### Support dynamically changing "accessor" for "useStoreMe" hook.
 
 - In previous versions "useStoreMe" returned "undefined" for a key that was changed on the fly.
 - Add more "accessor" validations in development mode.
 
-## [v1.3.2](https://github.com/mario-iliev/store-me/commit/be24d410191a5df18b5bc708c6704d104f947c93) (11-02-2021)
+## [v1.3.2](https://github.com/mario-iliev/store-me/tree/be24d410191a5df18b5bc708c6704d104f947c93) (11-02-2021)
 
 #### Performance improvement
 
 - Remove deep cloning state when using "previous state" from setStoreMe. Instead check for mutations only in development mode
 - Replace npm with yarn. Use babel for build instead of webpack.
 
-## [v1.3.1](https://github.com/mario-iliev/store-me/commit/787ca04255b6680b579981833db31b5d9c316436) (09-02-2021)
+## [v1.3.1](https://github.com/mario-iliev/store-me/tree/787ca04255b6680b579981833db31b5d9c316436) (09-02-2021)
 
 - Handle both list of arguments or array for methods: getStoreMe, resetStoreMe, deleteStoreMe and renderStoreMe
 
-## [v1.3.0](https://github.com/mario-iliev/store-me/commit/4a6cdd2a423ec74b3f6aa21156d09322516e2e85) (04-02-2021)
+## [v1.3.0](https://github.com/mario-iliev/store-me/tree/4a6cdd2a423ec74b3f6aa21156d09322516e2e85) (04-02-2021)
 
 - Add "performance" debug logs.
 

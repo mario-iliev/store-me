@@ -5,16 +5,17 @@ import {
   doesAccessorContainsNewStateKeys,
   getStateWithOriginalStructure,
   updateComponentsAndSyncState,
+  addNestedObjectTreeWithValue,
   createInitialStateStructure,
   createStructuredAccessors,
   createFirstLevelAccessors,
-  createNestedObjectTree,
   areAccessorsDifferent,
 } from "./utils/store-me";
 import cloneDeep from "./utils/clone-deep";
 import isObject from "./utils/is-object";
 import log from "./utils/log";
 
+const skipStateSyncForKeys = {};
 const componentsToUpdate = {};
 const subscriptions = {};
 let lastSubscriptionId = 0;
@@ -74,7 +75,7 @@ const getDataAndCompareChanges = (accessors, ignoreCompares = false, newStateKey
       }
     });
 
-    result = { ...result, ...createNestedObjectTree(acessorsPath, lastCurr) };
+    addNestedObjectTreeWithValue(result, acessorsPath, lastCurr);
   });
 
   return shouldUpdate || ignoreCompares ? result : "skip_update";
@@ -141,7 +142,7 @@ const runStoreMeSubscriptions = (ignoreCompares, newStateKeys) => {
     log.subscriptionsCount(ids.length);
   }
 
-  updateComponentsAndSyncState(state, subscriptions, componentsToUpdate);
+  updateComponentsAndSyncState(state, subscriptions, componentsToUpdate, skipStateSyncForKeys);
 };
 
 const getStoreMe = (...accessors) => {
@@ -182,6 +183,10 @@ const setStoreMe = (data, skipUiUpdate = false) => {
     let shouldRunSubscriptions = false;
 
     keys.forEach(key => {
+      if (skipUiUpdate) {
+        skipStateSyncForKeys[key] = 1;
+      }
+
       if (state.hasOwnProperty(key)) {
         if (state[key].current !== data[key]) {
           shouldRunSubscriptions = true;
@@ -275,6 +280,10 @@ const renderStoreMe = (...accessors) => {
   if (process.env.NODE_ENV === "development" && detectedBadAccessors(accessors)) {
     return;
   }
+
+  accessors.forEach(accessor => {
+    delete skipStateSyncForKeys[accessor];
+  });
 
   runStoreMeSubscriptions(false, accessors.length ? accessors : null);
 };

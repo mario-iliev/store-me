@@ -16,16 +16,21 @@ export function createInitialStateStructure(initialState) {
   return result;
 }
 
-export function createNestedObjectTree(keys, value) {
-  return keys.reverse().reduce((result, key) => {
-    const res = { [key]: result };
+export function addNestedObjectTreeWithValue(result, keys, value) {
+  keys = keys.reverse();
+  const firstKey = keys.shift();
+  const length = keys.length;
+  const lastKey = length ? keys[length - 1] : firstKey;
+  let tree = {
+    [firstKey]: value,
+  };
+  let i = 0;
 
-    if (result === value) {
-      result = {};
-    }
+  for (i; i < length; i++) {
+    tree = { [keys[i]]: tree };
+  }
 
-    return res;
-  }, value);
+  result[lastKey] = tree[lastKey];
 }
 
 export function createStructuredAccessors(accessors) {
@@ -34,7 +39,7 @@ export function createStructuredAccessors(accessors) {
 
     if (accessor.length > 1) {
       accessor = accessor.map(value =>
-        String(value).includes("[") ? String(value).replace(/\[|\]/g, "").split("|") : value
+        ~String(value).indexOf("[") ? String(value).replace(/\[|\]/g, "").split("|") : value
       );
     }
 
@@ -46,9 +51,9 @@ export function createFirstLevelAccessors(accessors) {
   return accessors.map(accessor => String(accessor).split(".").shift());
 }
 
-export function syncPrevAndCurrentData(storeMeState, keysToSync) {
+export function syncPrevAndCurrentData(storeMeState, keysToSync, skipStateSyncForKeys) {
   (keysToSync || Object.keys(storeMeState)).forEach(key => {
-    if (storeMeState.hasOwnProperty(key)) {
+    if (storeMeState.hasOwnProperty(key) && !skipStateSyncForKeys.hasOwnProperty(key)) {
       storeMeState[key].previous = storeMeState[key].current;
     }
   });
@@ -71,7 +76,7 @@ export function doesAccessorContainsNewStateKeys(accessors, newStateKeys) {
   let i = 0;
 
   for (i; i < length; i++) {
-    if (accessors.includes(newStateKeys[i])) {
+    if (~accessors.indexOf(newStateKeys[i])) {
       result = true;
       break;
     }
@@ -81,10 +86,11 @@ export function doesAccessorContainsNewStateKeys(accessors, newStateKeys) {
 }
 
 export function areAccessorsDifferent(a, b) {
-  if (a.length !== b.length) {
+  const length = b.length;
+
+  if (a.length !== length) {
     return 1;
   } else {
-    const length = b.length;
     let result = 0;
     let i = 0;
 
@@ -99,7 +105,12 @@ export function areAccessorsDifferent(a, b) {
   }
 }
 
-export function updateComponentsAndSyncState(storeMeState, subscriptions, componentsToUpdate) {
+export function updateComponentsAndSyncState(
+  storeMeState,
+  subscriptions,
+  componentsToUpdate,
+  skipStateSyncForKeys
+) {
   function initialize() {
     const ids = Object.keys(componentsToUpdate).reverse();
 
@@ -107,7 +118,7 @@ export function updateComponentsAndSyncState(storeMeState, subscriptions, compon
       if (componentsToUpdate[recordId]) {
         const { id, update, accessors } = componentsToUpdate[recordId];
 
-        syncPrevAndCurrentData(storeMeState, accessors);
+        syncPrevAndCurrentData(storeMeState, accessors, skipStateSyncForKeys);
 
         delete componentsToUpdate[recordId];
 

@@ -180,29 +180,30 @@ const setStoreMe = (data, skipUiUpdate = false) => {
 
   if (isObject(data)) {
     const keys = Object.keys(data);
-    let shouldRunSubscriptions = false;
+    const newStateKeys = [];
 
     keys.forEach(key => {
-      if (skipUiUpdate) {
-        skipStateSyncForKeys[key] = 1;
-      }
-
       if (state.hasOwnProperty(key)) {
         if (state[key].current !== data[key]) {
-          shouldRunSubscriptions = true;
+          newStateKeys.push(key);
           state[key].current = cloneDeep(data[key]);
         }
       } else {
-        shouldRunSubscriptions = true;
+        newStateKeys.push(key);
         state[key] = {
           default: cloneDeep(data[key]),
-          previous: "non-existent",
+          previous: cloneDeep(data[key]),
           current: data[key],
         };
       }
     });
 
-    !skipUiUpdate && shouldRunSubscriptions && runStoreMeSubscriptions(false, keys);
+    skipUiUpdate &&
+      newStateKeys.forEach(key => {
+        skipStateSyncForKeys[key] = 1;
+      });
+
+    !skipUiUpdate && newStateKeys.length && runStoreMeSubscriptions(false, newStateKeys);
   } else {
     console.error(`"setStoreMe" expects argument of type object or function but received: `, data);
   }
@@ -232,7 +233,7 @@ const resetStoreMe = (...accessors) => {
 
           state[accessor] = {
             default: state[accessor].default,
-            previous: "non-existent",
+            previous: cloneDeep(state[accessor].default),
             current: cloneDeep(state[accessor].default),
           };
         }

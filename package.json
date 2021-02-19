@@ -1,13 +1,15 @@
 {
   "name": "store-me",
-  "version": "1.4.4",
+  "version": "1.4.5",
   "description": "Fast, flexible and lightweight global state manager for React. Provides two APIs for both basic and more complex cases allowing you to control component updates.",
   "author": "Mario Iliev",
   "license": "MIT",
   "main": "./lib/index.js",
   "scripts": {
     "build": "babel src --out-dir lib",
-    "dev": "babel src --watch --out-dir lib"
+    "dev": "babel src --watch --out-dir lib",
+    "test": "jest",
+    "test:dev": "jest --watchAll"
   },
   "keywords": [
     "store-me",

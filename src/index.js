@@ -173,9 +173,11 @@ const getStoreMe = (...accessors) => {
 
 const setStoreMe = (data, skipUiUpdate = false) => {
   if (typeof data === "function") {
-    process.env.NODE_ENV === "development" && detectMutatedState(state, data);
-
-    data = data(getStateWithOriginalStructure(state));
+    if (process.env.NODE_ENV === "development") {
+      data = detectMutatedState(state, data);
+    } else {
+      data = data(getStateWithOriginalStructure(state));
+    }
   }
 
   if (isObject(data)) {

@@ -37,5 +37,5 @@ export const detectMutatedState = (storeMeState, setStoreMeCallback) => {
     console.error(message, result ? "This happened when you set: " : "", result ? result : "");
   }
 
-  return mutationDetected;
+  return result;
 };

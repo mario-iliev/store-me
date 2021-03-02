@@ -174,7 +174,7 @@ const getStoreMe = (...accessors) => {
 const setStoreMe = (data, skipUiUpdate = false) => {
   if (typeof data === "function") {
     if (process.env.NODE_ENV === "development") {
-      data = detectMutatedState(state, data);
+      data = detectMutatedState(state, data).result;
     } else {
       data = data(getStateWithOriginalStructure(state));
     }

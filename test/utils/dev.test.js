@@ -60,10 +60,10 @@ test("Detect state mutations", () => {
     return obj;
   };
 
-  expect(detectMutatedState(a, aFn)).toBe(false);
-  expect(detectMutatedState(b, bFn)).toBe(true);
-  expect(detectMutatedState(c, cFn)).toBe(true);
-  expect(detectMutatedState(d, dFn)).toBe(false);
-  expect(detectMutatedState(e, eFn)).toBe(false);
-  expect(detectMutatedState(f, fFn)).toBe(true);
+  expect(detectMutatedState(a, aFn).mutationDetected).toBe(false);
+  expect(detectMutatedState(b, bFn).mutationDetected).toBe(true);
+  expect(detectMutatedState(c, cFn).mutationDetected).toBe(true);
+  expect(detectMutatedState(d, dFn).mutationDetected).toBe(false);
+  expect(detectMutatedState(e, eFn).mutationDetected).toBe(false);
+  expect(detectMutatedState(f, fFn).mutationDetected).toBe(true);
 });

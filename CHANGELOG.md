@@ -1,3 +1,16 @@
+## [v1.4.7](https://github.com/mario-iliev/store-me/tree/cca84faa05dc0f46ff153c293465e973cf9ee216) (08-03-2021)
+
+- Fix for wrong "previous" and "current" state when there are no components listening for the state which is being updated
+
+## [v1.4.6](https://github.com/mario-iliev/store-me/tree/373bda6605f1dafaada35d476ecb0f0719b64891) (02-03-2021)
+
+- Fix double state set when using callback along with setStoreMe only in DEV mode
+
+## [v1.4.5](https://github.com/mario-iliev/store-me/tree/edf5f35b9aaff46cd5b19db697ef1494a277a344) (19-02-2021)
+
+- Small code improvement
+- Add first unit tests
+
 ## [v1.4.4](https://github.com/mario-iliev/store-me/tree/1afe746bef7dc72c2a1cd062a4cdcc4a2eaf7a2c) (15-02-2021)
 
 - Fix sync bug when using manual UI update with renderStoreMe

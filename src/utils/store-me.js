@@ -109,10 +109,14 @@ export function updateComponentsAndSyncState(
   storeMeState,
   subscriptions,
   componentsToUpdate,
-  skipStateSyncForKeys
+  skipStateSyncForKeys,
+  forceStateSyncForKeys
 ) {
   function initialize() {
     const ids = Object.keys(componentsToUpdate).reverse();
+
+    forceStateSyncForKeys.length &&
+      syncPrevAndCurrentData(storeMeState, forceStateSyncForKeys, skipStateSyncForKeys);
 
     ids.forEach(recordId => {
       if (componentsToUpdate[recordId]) {

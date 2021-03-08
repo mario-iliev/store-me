@@ -110,8 +110,15 @@ const storeMeSubscriber = (accessors, callback) => {
 
 const runStoreMeSubscriptions = (ignoreCompares, newStateKeys) => {
   const ids = Object.keys(subscriptions);
+  const forceStateSyncForKeys = {};
 
   function init() {
+    if (newStateKeys.length) {
+      newStateKeys.forEach(key => {
+        forceStateSyncForKeys[key] = 1;
+      });
+    }
+
     ids.forEach(id => {
       if (subscriptions[id]) {
         const { accessors, callback } = subscriptions[id];
@@ -123,6 +130,10 @@ const runStoreMeSubscriptions = (ignoreCompares, newStateKeys) => {
             update: () => callback(data),
             accessors: accessors.firstLevel,
           };
+
+          accessors.firstLevel.forEach(key => {
+            delete forceStateSyncForKeys[key];
+          });
         }
       }
     });
@@ -142,7 +153,13 @@ const runStoreMeSubscriptions = (ignoreCompares, newStateKeys) => {
     log.subscriptionsCount(ids.length);
   }
 
-  updateComponentsAndSyncState(state, subscriptions, componentsToUpdate, skipStateSyncForKeys);
+  updateComponentsAndSyncState(
+    state,
+    subscriptions,
+    componentsToUpdate,
+    skipStateSyncForKeys,
+    Object.keys(forceStateSyncForKeys)
+  );
 };
 
 const getStoreMe = (...accessors) => {

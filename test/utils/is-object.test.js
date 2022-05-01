@@ -1,6 +1,6 @@
 import isObject from "../../src/utils/is-object";
 
-test("Detect if value is na object of type {}", () => {
+test("Detect if value is an object of type {}", () => {
   const object = isObject({});
   const array = isObject([]);
   const string = isObject("a");

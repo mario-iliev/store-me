@@ -18,9 +18,40 @@ import log from "./utils/log";
 const skipStateSyncForKeys = {};
 const componentsToUpdate = {};
 const subscriptions = {};
+const broadCastAvailable =
+  typeof window !== "undefined" && typeof window.BroadcastChannel === "function";
+const broadcaster = broadCastAvailable ? new BroadcastChannel("store_me_channel") : false;
+let settingStoreMeFromBroadcastChannel = false;
+let stateKeysToSync = new Set([]);
 let lastSubscriptionId = 0;
 let storeMeInitialState;
 let state = null;
+
+if (broadCastAvailable) {
+  broadcaster.onmessage = event => {
+    const { isTrusted, data, target } = event;
+
+    if (isTrusted && target.name === "store_me_channel" && stateKeysToSync.size) {
+      const newState = JSON.parse(data);
+
+      if (Object.keys(newState).length) {
+        const stateToSync = {};
+
+        for (let key in newState) {
+          if (stateKeysToSync.has(key)) {
+            stateToSync[key] = newState[key];
+          }
+        }
+
+        if (Object.keys(stateToSync).length) {
+          settingStoreMeFromBroadcastChannel = true;
+
+          setStoreMe(stateToSync);
+        }
+      }
+    }
+  };
+}
 
 const getDataAndCompareChanges = (accessors, ignoreCompares = false, newStateKeys) => {
   if (newStateKeys && !doesAccessorContainsNewStateKeys(accessors.firstLevel, newStateKeys)) {
@@ -31,7 +62,7 @@ const getDataAndCompareChanges = (accessors, ignoreCompares = false, newStateKey
   let result = {};
 
   accessors.structured.forEach(group => {
-    const acessorsPath = group.filter(accessor => !Array.isArray(accessor));
+    const accessorsPath = group.filter(accessor => !Array.isArray(accessor));
     const groupLength = group.length;
     let lastPrev;
     let lastCurr;
@@ -75,7 +106,7 @@ const getDataAndCompareChanges = (accessors, ignoreCompares = false, newStateKey
       }
     });
 
-    addNestedObjectTreeWithValue(result, acessorsPath, lastCurr);
+    addNestedObjectTreeWithValue(result, accessorsPath, lastCurr);
   });
 
   return shouldUpdate || ignoreCompares ? result : "skip_update";
@@ -168,6 +199,16 @@ const getStoreMe = (...accessors) => {
   }
 
   if (accessors.length) {
+    if (process.env.NODE_ENV === "development" && state === null) {
+      console.error(
+        `You tried to retrieve the following state keys "${accessors.join(
+          ", "
+        )}". But StoreMe state was not initialized.`
+      );
+
+      return {};
+    }
+
     if (process.env.NODE_ENV === "development" && detectedBadAccessors(accessors)) {
       return {};
     }
@@ -200,6 +241,14 @@ const setStoreMe = (data, skipUiUpdate = false) => {
   if (isObject(data)) {
     const keys = Object.keys(data);
     const newStateKeys = [];
+
+    if (broadCastAvailable) {
+      if (settingStoreMeFromBroadcastChannel) {
+        settingStoreMeFromBroadcastChannel = false;
+      } else {
+        broadcaster.postMessage(JSON.stringify(data));
+      }
+    }
 
     keys.forEach(key => {
       if (state.hasOwnProperty(key)) {
@@ -308,13 +357,14 @@ const renderStoreMe = (...accessors) => {
   runStoreMeSubscriptions(false, accessors.length ? accessors : null);
 };
 
-const StoreMe = ({ initialState = {}, debug = [], children }) => {
+const StoreMe = ({ initialState = {}, syncStateKeys = [], debug = [], children }) => {
   if (!state) {
     storeMeInitialState = initialState;
 
     Object.freeze(storeMeInitialState);
 
     state = createInitialStateStructure(storeMeInitialState);
+    stateKeysToSync = new Set(syncStateKeys);
   }
 
   if (Array.isArray(debug)) {

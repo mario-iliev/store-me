@@ -5,9 +5,10 @@
   "author": "Mario Iliev",
   "license": "MIT",
   "main": "./lib/index.js",
+  "types": "./lib/index.d.ts",
   "scripts": {
-    "build": "babel src --out-dir lib",
-    "dev": "babel src --watch --out-dir lib",
+    "build": "babel src --out-dir lib --copy-files",
+    "dev": "babel src --watch --out-dir lib --copy-files",
     "test": "jest",
     "test:dev": "jest --watchAll"
   },
@@ -48,12 +49,12 @@
     ]
   },
   "peerDependencies": {
-    "react": "^16.8.0 || ^17.0.0",
-    "react-dom": "^16.8.0 || ^17.0.0"
+    "react": "^16.8.0 || ^17.0.0 || ^18.0.0",
+    "react-dom": "^16.8.0 || ^17.0.0 || ^18.0.0"
   },
   "devDependencies": {
-    "@babel/core": "^7.7.5",
     "@babel/cli": "^7.12.13",
+    "@babel/core": "^7.7.5",
     "@babel/preset-env": "^7.7.6",
     "@babel/preset-react": "^7.7.4",
     "@typescript-eslint/eslint-plugin": "^4.14.1",

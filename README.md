@@ -58,10 +58,11 @@ import App from "./App";
 </StoreMe>;
 ```
 
-[Read more](#api) about the debug prop and how it can help you.
+[Read more](#api) about the "syncStateKeys" prop (similar to Redux sync-state functionality).
+[Read more](#api) about the "debug" prop and how it can help you.
 
 ```js
-<StoreMe debug={[1, 3]}>
+<StoreMe syncStateKeys={["language", "user"]} debug={[1, 3]}>
 ```
 
 ## useStoreMe
@@ -248,7 +249,7 @@ const App = () => {
 
 It's not required to be subscribed to a specific state value in order to access it. **getStoreMe** can be used in various scenarios as you will see in the examples listed here.
 
-In this situation, we want to send some data to the backend on click event. Untill the user initiate that click there is no point of having re-renders when the user object or the language changes. We can consume the state just when we want it.
+In this situation, we want to send some data to the backend on click event. Until the user initiate that click there is no point of having re-renders when the user object or the language changes. We can consume the state just when we want it.
 
 ```js
 import { getStoreMe } from "store-me";
@@ -273,7 +274,7 @@ const App = () => {
 #### Reset values to their original state
 
 It could be useful to reset some state with initial values, let's say when the user logs in or out.
-**There are three different reset options.** For convinience let's show them in one place:
+**There are three different reset options.** For convenience let's show them in one place:
 
 ```js
 import { useStoreMe, resetStoreMe } from "store-me";
@@ -342,7 +343,7 @@ const App = () => {
 #### Update React UI on demand
 
 You will need this **only if** you use the second argument of [setStoreMe](#setstoreme)\
-An example can be seen in the [Performance recepies](#setstoreme-and-renderstoreme)
+An example can be seen in the [Performance recipes](#setstoreme-and-renderstoreme)
 
 # Performance recepies
 
@@ -420,7 +421,7 @@ const App = () => {
   Instead of using "isVisible" state and subscribe/unsubscribe depending on it's value,
   we could be always subscribed but update our component state only when we want, using
   the React useRef to determine if we want or not.
-  This is usefull if you have multiple conditions
+  This is useful if you have multiple conditions
   upon which you decide if you want to update or not.
   */
   useEffect(() => {
@@ -494,7 +495,7 @@ const App = () => {
 
 Imagine that your application receives big list of movies to present. After receiving the initial list you will continue receive live and **frequent updates** for their ratings. If we have an array of 100 movie objects, then we update two of them, we will change the **entire list**, thus forcing React to re-render it.
 
-One possible solution is to write each movie as a separate value in the global state and keep one array of all movie IDs. Then we will render the list **once** using the array of IDs and **subscribe** each movie independantly.
+One possible solution is to write each movie as a separate value in the global state and keep one array of all movie IDs. Then we will render the list **once** using the array of IDs and **subscribe** each movie independently.
 Later on if you need to add new movie in the list or sort the movies by some criteria, you will work with the array of IDs and cause re-render of the entire list only in those situations.
 
 ```js
@@ -532,24 +533,24 @@ const Movie = movie_id => {
 
 ## setStoreMe and renderStoreMe
 
-Image that your application receives stream of data trough webSockets, severl times per second.
+Image that your application receives stream of data trough webSockets, several times per second.
 Multiple channels are sending different data which you want to display **at once** every 5 seconds.
-Combinig the **second argument** of **setStoreMe** and manually render specific UI changes can achieve exactly this.
+Combining the **second argument** of **setStoreMe** and manually render specific UI changes can achieve exactly this.
 
 ```js
 // Current global state:
 const globalState = {
-  // Constanly updated 4 times per second
+  // Constantly updated 4 times per second
   movies_ratings: [
     { id: 1, rating: 7.5 },
     { id: 2, rating: 9 },
   ],
-  // Constanly updated 2 times per second
+  // Constantly updated 2 times per second
   profits_by_rating: [
     { id: 1, profit: 760040 },
     { id: 2, profit: 1260040 },
   ],
-  // Constanly updated 5 times per second
+  // Constantly updated 5 times per second
   comments: [
     { id: 1, text: "I love this movie..." },
     { id: 2, text: "I've seen better..." },
@@ -576,7 +577,9 @@ const App = () => {
 
 const Consumer = () => {
   const { movies_ratings, profits_by_rating, comments } = useStoreMe(
-    "movies_id"
+    "movies_ratings",
+    "profits_by_rating",
+    "comments"
   );
 
   useEffect(() => {
@@ -612,8 +615,15 @@ _Type:_ `Component`\
 _Arguments:_
 
 - `initialState` of type object `{}`
+- `syncStateKeys` of type array `[]` Example: `<StoreMe syncStateKeys={["language", "theme"]}>`\
+  It makes sense for some parts of the state to be shared between multiple browser tabs or windows.\
+  For example if user changes the color theme from one tab, you would like to switch the theme in all opened tabs.\
+  **Attention!** Use this feature wisely since you could cause yourself unintentional bugs.\
+  Imagine that some particular state with initial value of `false` will trigger a REST call to your backend if the value becomes `true`.\
+  You probably don't want to make this call 5 times (in case the user has your application opened in 5 browser tabs).\
+  This is why you must be careful what part of the state you sync between tabs and why this feature is opt-in.
 - `debug` accepts `array` with `number` values. Example: `<StoreMe debug={[1, 2, 3]}>`\
-  Currently there are 3 logs which you can see independantly by specifying their ID in the array.
+  Currently there are 3 logs which you can see independently by specifying their ID in the array.
 
   - 1 - Will show you how much time was needed for React to render the components which were affected of the last state change.
     This could help you to find components that take too much time to render and optimize them.\
@@ -621,7 +631,7 @@ _Arguments:_
     `[1] React updated and rendered 005 components for 10.8799999980 ms [Array(5)]`
   - 2 - Will show you the time needed for StoreMe to check the new state differences and decide which component should be updated.\
     Example output:\
-    `[2] StoreMe bilt components state for 1.8199999976786785 ms`
+    `[2] StoreMe built components state for 1.8199999976786785 ms`
   - 3 - Will show you how many components are currently connected to StoreMe.\
     Example output:\
     `[3] Current StoreMe connected components: 2672`
